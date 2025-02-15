@@ -1,0 +1,64 @@
+from telegram import Bot
+from telegram.ext import CommandHandler, Updater
+
+def start(update, context):
+    update.message.reply_text("Hello! Welcome to the Telegram Star Shop!")
+
+def main():
+    # Replace with your Bot's API token
+    updater = Updater("YOUR_API_TOKEN", use_context=True)
+    dp = updater.dispatcher
+
+    dp.add_handler(CommandHandler("start", start))
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
+from telegram import LabeledPrice
+from telegram.ext import PreCheckoutQueryHandler, MessageHandler, Filters
+
+def start(update, context):
+    # Start command where you could offer the purchase
+    update.message.reply_text("Welcome! Type /buy to purchase Telegram stars.")
+
+def buy(update, context):
+    # Sending a payment request
+    price = 100  # price for the stars in the bot (adjust as needed)
+    title = "Telegram Stars"
+    description = "Get 10 Telegram Stars!"
+    payload = "stars123"  # A custom payload you can use to identify the transaction
+    
+    prices = [LabeledPrice("10 Stars", price * 100)]  # Price in cents
+    update.message.reply_text(
+        "Please proceed with your purchase.",
+        reply_markup=telegram.ReplyKeyboardRemove(),
+        send_invoice=True,
+        title=title,
+        description=description,
+        payload=payload,
+        provider_token="YOUR_PROVIDER_TOKEN",  # You get this token from Telegram
+        currency="USD",
+        prices=prices,
+    )
+
+def precheckout_callback(update, context):
+    query = update.pre_checkout_query
+    if query.invoice_payload != 'stars123':  # match with payload
+        query.answer(ok=False)
+    else:
+        query.answer(ok=True)
+
+def main():
+    updater = Updater("YOUR_API_TOKEN", use_context=True)
+    dp = updater.dispatcher
+    
+    dp.add_handler(CommandHandler("start", start))
+    dp.add_handler(CommandHandler("buy", buy))
+    dp.add_handler(PreCheckoutQueryHandler(precheckout_callback))
+    
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
